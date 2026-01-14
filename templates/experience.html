@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Work Experience{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">💼 Work Experience</h1>
+            <p class="text-gray-500">Add all your jobs - the AI will select the best bullets for each application</p>
+        </div>
+        
+        <a href="{{ url_for('profile') }}" class="btn btn-secondary">
+            ← Back to Profile
+        </a>
+    </div>
+    
+    <!-- Add New Experience -->
+    <div class="card bg-indigo-50 border-2 border-indigo-100">
+        <h2 class="font-semibold text-lg text-gray-800 mb-4">➕ Add New Position</h2>
+        
+        <form method="POST" class="space-y-4">
+            <input type="hidden" name="action" value="add">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Job Title *</label>
+                    <input type="text" name="title" required
+                           placeholder="Product Manager"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Company *</label>
+                    <input type="text" name="company" required
+                           placeholder="Acme Corp"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <input type="text" name="exp_location"
+                           placeholder="Atlanta, GA"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input type="month" name="start_date"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                    </div>
+                    
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input type="month" name="end_date"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center">
+                <input type="checkbox" name="current" id="current" class="h-4 w-4 text-indigo-600 rounded">
+                <label for="current" class="ml-2 text-sm text-gray-700">I currently work here</label>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Accomplishments & Responsibilities
+                </label>
+                <textarea name="bullets" rows="5"
+                          placeholder="• Led team of 5 to deliver project 2 weeks early
+• Increased efficiency by 30% through process automation
+• Managed $500K budget with zero overruns"
+                          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white"></textarea>
+                <p class="text-xs text-gray-500 mt-1">
+                    Put each accomplishment on a new line. Start with action verbs. Include numbers when possible!
+                </p>
+            </div>
+            
+            <button type="submit" class="btn btn-success">
+                ➕ Add Experience
+            </button>
+        </form>
+    </div>
+    
+    <!-- Existing Experience -->
+    <h2 class="font-semibold text-lg text-gray-800">Your Experience</h2>
+    
+    {% if experience %}
+        <div class="space-y-4">
+            {% for exp in experience %}
+                <div class="card">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                        <div class="flex-grow">
+                            <h3 class="font-semibold text-lg text-gray-800">{{ exp.title }}</h3>
+                            <p class="text-gray-600">{{ exp.company }}</p>
+                            <p class="text-sm text-gray-500">
+                                📍 {{ exp.location or 'Location not set' }} • 
+                                📅 {{ exp.start_date|format_date }} - {{ exp.end_date|format_date if not exp.current else 'Present' }}
+                            </p>
+                            
+                            {% if exp.bullets %}
+                                <ul class="mt-3 space-y-1">
+                                    {% for bullet in exp.bullets %}
+                                        <li class="text-gray-700 text-sm flex">
+                                            <span class="text-indigo-400 mr-2">•</span>
+                                            <span>{{ bullet.original if bullet.original is defined else bullet }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        
+                        <form method="POST" onsubmit="return confirm('Delete this experience?');">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="exp_id" value="{{ exp.id }}">
+                            <button type="submit" class="btn btn-danger text-sm">
+                                🗑️ Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card text-center py-8">
+            <div class="text-4xl mb-3">📝</div>
+            <p class="text-gray-500">No experience added yet. Add your first position above!</p>
+        </div>
+    {% endif %}
+    
+    <!-- Tips -->
+    <div class="card bg-yellow-50 border border-yellow-100">
+        <h3 class="font-medium text-yellow-800 mb-2">💡 Tips for Great Bullet Points</h3>
+        <ul class="text-sm text-yellow-700 space-y-1">
+            <li>• <strong>Start with action verbs:</strong> Led, Managed, Created, Improved, Delivered</li>
+            <li>• <strong>Include numbers:</strong> "Increased sales by 25%" beats "Improved sales"</li>
+            <li>• <strong>Show impact:</strong> What was the result of your work?</li>
+            <li>• <strong>Be specific:</strong> Name tools, team sizes, budget amounts</li>
+            <li>• <strong>Add everything:</strong> The AI will select the best bullets for each job!</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

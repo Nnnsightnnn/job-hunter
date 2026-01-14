@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Search Jobs{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="card">
+        <div class="text-center mb-6">
+            <div class="text-4xl mb-3">🔍</div>
+            <h1 class="text-2xl font-bold text-gray-800">Search for Jobs</h1>
+            <p class="text-gray-500 mt-1">We'll search Indeed, LinkedIn, Glassdoor & ZipRecruiter</p>
+        </div>
+        
+        <form method="POST" class="space-y-6">
+            <!-- Job Title -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    What kind of job are you looking for?
+                </label>
+                <input type="text" 
+                       name="search_term" 
+                       placeholder="e.g., Product Manager, Project Coordinator, Operations..." 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                       required>
+                <p class="text-sm text-gray-500 mt-1">Tip: Try different titles to find more opportunities</p>
+            </div>
+            
+            <!-- Location -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Where?
+                </label>
+                <input type="text" 
+                       name="location" 
+                       value="Atlanta, GA"
+                       placeholder="City, State or 'Remote'" 
+                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            
+            <!-- Remote Toggle -->
+            <div class="flex items-center">
+                <input type="checkbox" 
+                       name="remote_only" 
+                       id="remote_only"
+                       class="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                <label for="remote_only" class="ml-3 text-gray-700">
+                    Remote jobs only
+                </label>
+            </div>
+            
+            <!-- Submit -->
+            <button type="submit" class="btn btn-primary w-full text-lg py-3">
+                🔍 Search Jobs
+            </button>
+        </form>
+        
+        <div class="mt-8 p-4 bg-blue-50 rounded-lg">
+            <h3 class="font-medium text-blue-800 mb-2">💡 Search Tips</h3>
+            <ul class="text-sm text-blue-700 space-y-1">
+                <li>• Try variations: "Project Manager" vs "Program Manager"</li>
+                <li>• Search for skills: "Excel analyst" or "Salesforce admin"</li>
+                <li>• Be specific: "Healthcare project coordinator"</li>
+                <li>• Searches find jobs posted in the last 3 days</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

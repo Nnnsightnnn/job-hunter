@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}My Resumes{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800">📄 Your Tailored Resumes</h1>
+        <p class="text-gray-500">Download and use these for your applications</p>
+    </div>
+    
+    {% if resumes %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for resume in resumes %}
+                <div class="card hover:shadow-md transition-shadow">
+                    <div class="flex items-start gap-4">
+                        <div class="text-4xl">📄</div>
+                        <div class="flex-grow">
+                            <h3 class="font-medium text-gray-800">{{ resume.company|title }}</h3>
+                            <p class="text-sm text-gray-500">{{ resume.date }}</p>
+                            <p class="text-xs text-gray-400 mt-1">{{ resume.size }}</p>
+                        </div>
+                    </div>
+                    
+                    <a href="{{ url_for('download_file', filename=resume.name) }}" 
+                       class="btn btn-primary w-full mt-4">
+                        📥 Download PDF
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card text-center py-12">
+            <div class="text-5xl mb-4">📭</div>
+            <h3 class="text-xl font-medium text-gray-800 mb-2">No resumes yet</h3>
+            <p class="text-gray-500 mb-6">
+                Find a job you like and click "Create Tailored Resume"!
+            </p>
+            <a href="{{ url_for('jobs') }}" class="btn btn-primary">
+                📋 Browse Jobs
+            </a>
+        </div>
+    {% endif %}
+    
+    <!-- Tips -->
+    <div class="card bg-blue-50 border border-blue-100">
+        <h3 class="font-medium text-blue-800 mb-2">💡 Resume Tips</h3>
+        <ul class="text-sm text-blue-700 space-y-1">
+            <li>• Each resume is tailored specifically for that job's requirements</li>
+            <li>• Always review the PDF before submitting - add any personal touches</li>
+            <li>• Keep copies of what you submit for interview prep</li>
+            <li>• The AI rewrites your bullets to match keywords in the job posting</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

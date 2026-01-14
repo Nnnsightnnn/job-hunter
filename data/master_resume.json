@@ -1,0 +1,56 @@
+{
+  "meta": {
+    "version": "1.0",
+    "last_updated": "2025-01-01",
+    "notes": "Your master resume - edit this file with all experience, then the system tailors it per job"
+  },
+  "personal": {
+    "name": "Your Name",
+    "email": "you@email.com",
+    "phone": "(555) 555-5555",
+    "location": "City, State",
+    "linkedin": "linkedin.com/in/yourprofile",
+    "portfolio": "",
+    "summary": "Experienced professional with X years in [industry]. Skilled in [key skills]. Passionate about [what drives you]."
+  },
+  "experience": [
+    {
+      "id": "exp_001",
+      "company": "Company Name",
+      "title": "Job Title",
+      "location": "City, State",
+      "start_date": "2020-01",
+      "end_date": "present",
+      "current": true,
+      "bullets": [
+        {
+          "id": "bullet_001",
+          "original": "Led cross-functional team of 5 to deliver project on time",
+          "keywords": ["leadership", "project management", "cross-functional"],
+          "metrics": {"team_size": 5},
+          "tailored_versions": {}
+        }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "University Name",
+      "degree": "Bachelor of Science",
+      "field": "Field of Study",
+      "graduation_date": "2017-05",
+      "gpa": "",
+      "honors": [],
+      "relevant_coursework": []
+    }
+  ],
+  "skills": {
+    "technical": [],
+    "soft": ["Communication", "Leadership", "Problem Solving"],
+    "tools": [],
+    "certifications": []
+  },
+  "projects": [],
+  "volunteer": [],
+  "awards": []
+}

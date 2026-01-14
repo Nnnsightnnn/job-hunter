@@ -1,0 +1,23 @@
+# Carrie's Job Hunter - Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web UI
+flask>=3.0.0                   # Web framework for the UI
+
+# Job Scraping
+python-jobspy>=1.1.0          # Aggregates Indeed, LinkedIn, Glassdoor, ZipRecruiter
+
+# LLM Integration
+ollama>=0.2.0                  # Python client for Ollama
+
+# Templating
+jinja2>=3.1.0                  # Template engine for LaTeX generation
+
+# Utilities
+requests>=2.31.0               # HTTP library
+python-dateutil>=2.8.0         # Date parsing utilities
+
+# Optional: For enhanced features
+# rich>=13.0.0                 # Beautiful terminal output
+# pandas>=2.0.0                # If you want to export to Excel/CSV
+# schedule>=1.2.0              # For automated daily scraping

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Welcome Header -->
+    <div class="text-center py-6">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome, Carrie! 👋</h1>
+        <p class="text-gray-600">Let's find your next opportunity</p>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a href="{{ url_for('search') }}" class="card hover:shadow-md transition-shadow group">
+            <div class="text-center">
+                <div class="text-4xl mb-3">🔍</div>
+                <h3 class="font-semibold text-lg text-gray-800 group-hover:text-indigo-600">Search Jobs</h3>
+                <p class="text-gray-500 text-sm mt-1">Find new opportunities</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('jobs', status='new') }}" class="card hover:shadow-md transition-shadow group">
+            <div class="text-center">
+                <div class="text-4xl mb-3">📋</div>
+                <h3 class="font-semibold text-lg text-gray-800 group-hover:text-indigo-600">Review Jobs</h3>
+                <p class="text-gray-500 text-sm mt-1">{{ stats.by_status.new }} new jobs to review</p>
+            </div>
+        </a>
+        
+        <a href="{{ url_for('profile') }}" class="card hover:shadow-md transition-shadow group">
+            <div class="text-center">
+                <div class="text-4xl mb-3">👤</div>
+                <h3 class="font-semibold text-lg text-gray-800 group-hover:text-indigo-600">Edit Profile</h3>
+                <p class="text-gray-500 text-sm mt-1">Update your resume</p>
+            </div>
+        </a>
+    </div>
+    
+    <!-- Stats Overview -->
+    <div class="card">
+        <h2 class="font-semibold text-lg text-gray-800 mb-4">📊 Your Progress</h2>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <a href="{{ url_for('jobs', status='new') }}" class="text-center p-4 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors">
+                <div class="text-2xl font-bold text-blue-600">{{ stats.by_status.new }}</div>
+                <div class="text-sm text-blue-800">New</div>
+            </a>
+            <a href="{{ url_for('jobs', status='applied') }}" class="text-center p-4 rounded-lg bg-yellow-50 hover:bg-yellow-100 transition-colors">
+                <div class="text-2xl font-bold text-yellow-600">{{ stats.by_status.applied }}</div>
+                <div class="text-sm text-yellow-800">Applied</div>
+            </a>
+            <a href="{{ url_for('jobs', status='interviewing') }}" class="text-center p-4 rounded-lg bg-green-50 hover:bg-green-100 transition-colors">
+                <div class="text-2xl font-bold text-green-600">{{ stats.by_status.interviewing }}</div>
+                <div class="text-sm text-green-800">Interviewing</div>
+            </a>
+            <a href="{{ url_for('jobs', status='offer') }}" class="text-center p-4 rounded-lg bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                <div class="text-2xl font-bold text-emerald-600">{{ stats.by_status.offer }}</div>
+                <div class="text-sm text-emerald-800">Offers</div>
+            </a>
+            <div class="text-center p-4 rounded-lg bg-gray-50">
+                <div class="text-2xl font-bold text-gray-600">{{ stats.total }}</div>
+                <div class="text-sm text-gray-600">Total</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Two Column Layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Recent Jobs -->
+        <div class="card">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-semibold text-lg text-gray-800">📋 Recent Jobs</h2>
+                <a href="{{ url_for('jobs') }}" class="text-indigo-600 text-sm hover:underline">View all →</a>
+            </div>
+            
+            {% if recent_jobs %}
+                <div class="space-y-3">
+                    {% for job in recent_jobs %}
+                        <a href="{{ url_for('job_detail', job_id=job.id) }}" 
+                           class="block p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <div class="font-medium text-gray-800">{{ job.title|truncate_text(35) }}</div>
+                                    <div class="text-sm text-gray-500">{{ job.company }}</div>
+                                </div>
+                                <span class="px-2 py-1 rounded text-xs font-medium status-{{ job.status }}">
+                                    {{ job.status }}
+                                </span>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 text-center py-6">
+                    No jobs yet. <a href="{{ url_for('search') }}" class="text-indigo-600 hover:underline">Search for some!</a>
+                </p>
+            {% endif %}
+        </div>
+        
+        <!-- Recent Resumes -->
+        <div class="card">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-semibold text-lg text-gray-800">📄 Recent Resumes</h2>
+                <a href="{{ url_for('resumes') }}" class="text-indigo-600 text-sm hover:underline">View all →</a>
+            </div>
+            
+            {% if recent_pdfs %}
+                <div class="space-y-3">
+                    {% for pdf in recent_pdfs %}
+                        <a href="{{ url_for('download_file', filename=pdf) }}" 
+                           class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100">
+                            <span class="text-2xl mr-3">📄</span>
+                            <div>
+                                <div class="font-medium text-gray-800">{{ pdf }}</div>
+                                <div class="text-sm text-gray-500">Click to download</div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500 text-center py-6">
+                    No resumes generated yet. Find a job and click "Create Resume"!
+                </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

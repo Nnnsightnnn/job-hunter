@@ -1,0 +1,26 @@
+{
+  "data_dir": "data",
+  "output_dir": "output",
+  "templates_dir": "templates",
+  
+  "ollama_model": "llama3.1:8b",
+  "ollama_host": "http://localhost:11434",
+  
+  "scraper": {
+    "default_location": "Atlanta, GA",
+    "default_results_per_site": 15,
+    "default_hours_old": 72,
+    "sites": ["indeed", "linkedin", "glassdoor", "zip_recruiter"]
+  },
+  
+  "job_keywords": {
+    "include": [],
+    "exclude": ["senior director", "vp", "vice president"]
+  },
+  
+  "notifications": {
+    "enabled": false,
+    "email": "",
+    "daily_digest_time": "08:00"
+  }
+}

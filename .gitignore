@@ -1,0 +1,28 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Output files (user-generated)
+output/*.pdf
+output/*.json
+output/*.tex
+output/*.log
+output/*.aux
+
+# User data (keep template, ignore personal data)
+data/jobs.json
+data/saved_jobs.json
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

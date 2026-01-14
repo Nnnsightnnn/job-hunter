@@ -1,0 +1,121 @@
+% Resume Template - ATS Optimized
+% Designed to be clean, parseable, and professional
+\documentclass[11pt,letterpaper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+
+% Colors
+\definecolor{headercolor}{RGB}{0, 51, 102}
+\definecolor{linkcolor}{RGB}{0, 102, 204}
+
+% Hyperlink setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=linkcolor,
+    urlcolor=linkcolor,
+    pdfborder={0 0 0}
+}
+
+% Section formatting
+\titleformat{\section}
+    {\large\bfseries\color{headercolor}}
+    {}
+    {0em}
+    {}
+    [\titlerule]
+
+\titlespacing*{\section}{0pt}{12pt}{6pt}
+
+% Remove page numbers
+\pagenumbering{gobble}
+
+% Custom commands
+\newcommand{\resumeheader}[5]{
+    \begin{center}
+        {\LARGE\bfseries #1} \\[4pt]
+        #2 \quad $\bullet$ \quad #3 \quad $\bullet$ \quad #4 \\
+        \ifx&#5&\else \href{https://#5}{#5} \fi
+    \end{center}
+}
+
+\newcommand{\experienceitem}[4]{
+    \textbf{#1} \hfill #2 \\
+    \textit{#3} \hfill \textit{#4}
+}
+
+\newcommand{\educationitem}[4]{
+    \textbf{#1} \hfill #2 \\
+    \textit{#3} \hfill \textit{#4}
+}
+
+% Bullet list styling
+\setlist[itemize]{leftmargin=*, itemsep=2pt, parsep=0pt, topsep=4pt}
+
+\begin{document}
+
+% HEADER - Variables injected by Python
+\resumeheader
+    {<< name >>}
+    {<< email >>}
+    {<< phone >>}
+    {<< location >>}
+    {<< linkedin >>}
+
+% SUMMARY
+\section{Professional Summary}
+<< summary >>
+
+% EXPERIENCE
+\section{Professional Experience}
+<% for job in experience %>
+\experienceitem
+    {<< job.title >>}
+    {<< job.start_date >> -- << job.end_date >>}
+    {<< job.company >>}
+    {<< job.location >>}
+\begin{itemize}
+<% for bullet in job.bullets %>
+    \item << bullet >>
+<% endfor %>
+\end{itemize}
+\vspace{4pt}
+<% endfor %>
+
+% EDUCATION
+\section{Education}
+<% for edu in education %>
+\educationitem
+    {<< edu.institution >>}
+    {<< edu.graduation_date >>}
+    {<< edu.degree >> in << edu.field >>}
+    {}
+<% if edu.gpa %>GPA: << edu.gpa >><% endif %>
+\vspace{4pt}
+<% endfor %>
+
+% SKILLS
+\section{Skills}
+<% if skills.technical %>
+\textbf{Technical:} << skills.technical | join(", ") >> \\
+<% endif %>
+<% if skills.tools %>
+\textbf{Tools:} << skills.tools | join(", ") >> \\
+<% endif %>
+<% if skills.soft %>
+\textbf{Core Competencies:} << skills.soft | join(", ") >>
+<% endif %>
+
+<% if skills.certifications %>
+\section{Certifications}
+<< skills.certifications | join(" $\\bullet$ ") >>
+<% endif %>
+
+\end{document}
