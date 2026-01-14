@@ -26,3 +26,8 @@ data/saved_jobs.json
 
 # Logs
 *.log
+
+# CLAUDE
+.claude_config.json
+.claude
+CLAUDE.md
