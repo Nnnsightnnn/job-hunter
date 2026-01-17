@@ -11,7 +11,8 @@ import sys
 import json
 from pathlib import Path
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, jsonify, session
+from werkzeug.utils import secure_filename
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
@@ -19,6 +20,8 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 from job_scraper import JobScraper
 from resume_tailor import ResumeTailor
 from pdf_compiler import PDFCompiler
+from resume_parser import ResumeParser
+from resume_structurer import ResumeStructurer
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -26,12 +29,18 @@ app.secret_key = os.urandom(24)
 # Initialize components
 DATA_DIR = Path("data")
 OUTPUT_DIR = Path("output")
+UPLOAD_DIR = DATA_DIR / "uploads"
 DATA_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
+UPLOAD_DIR.mkdir(exist_ok=True)
+
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024  # 5MB max upload
 
 scraper = JobScraper(data_dir=str(DATA_DIR))
 tailor = ResumeTailor(master_resume_path=str(DATA_DIR / "master_resume.json"))
 compiler = PDFCompiler(output_dir=str(OUTPUT_DIR))
+resume_parser = ResumeParser(upload_folder=str(UPLOAD_DIR))
+resume_structurer = ResumeStructurer(master_resume_path=str(DATA_DIR / "master_resume.json"))
 
 
 # ============================================================================
@@ -366,6 +375,163 @@ def experience():
         return redirect(url_for("experience"))
     
     return render_template("experience.html", experience=resume.get("experience", []))
+
+
+@app.route("/upload", methods=["GET", "POST"])
+def upload():
+    """Upload resume form and file processing"""
+    if request.method == "POST":
+        # Check if file was uploaded
+        if 'resume_file' not in request.files:
+            flash("No file selected.", "error")
+            return redirect(url_for("upload"))
+
+        file = request.files['resume_file']
+
+        if file.filename == '':
+            flash("No file selected.", "error")
+            return redirect(url_for("upload"))
+
+        # Validate file
+        is_valid, error_msg = resume_parser.validate_file(
+            file.filename,
+            file.content_length or len(file.read())
+        )
+        file.seek(0)  # Reset file pointer after reading
+
+        if not is_valid:
+            flash(error_msg, "error")
+            return redirect(url_for("upload"))
+
+        try:
+            # Save uploaded file
+            filename = secure_filename(file.filename)
+            filepath = UPLOAD_DIR / filename
+            file.save(str(filepath))
+
+            # Extract text from file
+            ext = resume_parser.get_file_extension(filename)
+            use_ai = request.form.get('use_ai') == 'on'
+
+            if ext == 'json':
+                # Handle JSON files specially
+                parsed_data, parse_error = resume_parser.parse_json_resume(str(filepath))
+                if parsed_data and not parse_error:
+                    # JSON is already structured, use directly
+                    extracted_data = {
+                        "personal": parsed_data.get("personal", {}),
+                        "experience": parsed_data.get("experience", []),
+                        "education": parsed_data.get("education", []),
+                        "skills": parsed_data.get("skills", {})
+                    }
+                    error = None
+                else:
+                    # Try to structure the JSON content
+                    text, _ = resume_parser.extract_text(str(filepath))
+                    extracted_data, error = resume_structurer.structure_resume(text, use_ai=use_ai)
+            else:
+                # Extract text and structure
+                text, extract_error = resume_parser.extract_text(str(filepath))
+
+                if extract_error and not text:
+                    flash(extract_error, "error")
+                    resume_parser.cleanup_temp_file(str(filepath))
+                    return redirect(url_for("upload"))
+
+                # Structure the extracted text
+                extracted_data, error = resume_structurer.structure_resume(text, use_ai=use_ai)
+
+            # Clean up uploaded file
+            resume_parser.cleanup_temp_file(str(filepath))
+
+            # Store extracted data in session for preview
+            session['extracted_resume'] = extracted_data
+            session['extraction_error'] = error
+
+            return redirect(url_for("upload_preview"))
+
+        except Exception as e:
+            flash(f"Error processing file: {str(e)}", "error")
+            return redirect(url_for("upload"))
+
+    return render_template("upload.html")
+
+
+@app.route("/upload/preview")
+def upload_preview():
+    """Preview extracted data before saving"""
+    extracted = session.get('extracted_resume')
+    error = session.get('extraction_error')
+
+    if not extracted:
+        flash("No extracted data found. Please upload a file first.", "error")
+        return redirect(url_for("upload"))
+
+    # Load current master resume
+    resume_path = DATA_DIR / "master_resume.json"
+    with open(resume_path, 'r') as f:
+        current = json.load(f)
+
+    return render_template("upload_preview.html",
+                         extracted=extracted,
+                         current=current,
+                         error=error)
+
+
+@app.route("/upload/confirm", methods=["POST"])
+def upload_confirm():
+    """Merge extracted data and save to master resume"""
+    extracted = session.get('extracted_resume')
+
+    if not extracted:
+        flash("No extracted data found. Please upload a file first.", "error")
+        return redirect(url_for("upload"))
+
+    try:
+        # Get form data to update extracted data
+        updated_extracted = {
+            "personal": {
+                "name": request.form.get("name", ""),
+                "email": request.form.get("email", ""),
+                "phone": request.form.get("phone", ""),
+                "location": request.form.get("location", ""),
+                "linkedin": request.form.get("linkedin", ""),
+                "summary": request.form.get("summary", "")
+            },
+            "experience": json.loads(request.form.get("experience_json", "[]")),
+            "education": json.loads(request.form.get("education_json", "[]")),
+            "skills": {
+                "technical": [s.strip() for s in request.form.get("technical_skills", "").split(",") if s.strip()],
+                "soft": [s.strip() for s in request.form.get("soft_skills", "").split(",") if s.strip()],
+                "tools": [s.strip() for s in request.form.get("tools", "").split(",") if s.strip()],
+                "certifications": extracted.get("skills", {}).get("certifications", [])
+            }
+        }
+
+        # Load current master resume
+        resume_path = DATA_DIR / "master_resume.json"
+        with open(resume_path, 'r') as f:
+            current = json.load(f)
+
+        # Get merge mode
+        merge_mode = request.form.get("merge_mode", "merge")
+
+        # Merge data
+        merged = resume_structurer.merge_with_master(updated_extracted, current, mode=merge_mode)
+
+        # Save merged resume
+        resume_structurer.save_master_resume(merged, str(resume_path))
+
+        # Clear session data
+        session.pop('extracted_resume', None)
+        session.pop('extraction_error', None)
+
+        flash(f"Resume imported successfully! Mode: {merge_mode}", "success")
+        return redirect(url_for("profile"))
+
+    except Exception as e:
+        flash(f"Error saving resume: {str(e)}", "error")
+        return redirect(url_for("upload_preview"))
 
 
 # ============================================================================

@@ -13,6 +13,52 @@
 cd "$(dirname "$0")"
 APP_DIR="$(pwd)"
 
+# ============================================================
+# AUTO-UPDATE (runs silently on every launch)
+# ============================================================
+
+if [[ "$1" != "--skip-update" ]]; then
+    _GREEN='\033[0;32m'
+    _YELLOW='\033[1;33m'
+    _NC='\033[0m'
+
+    SCRIPT_PATH="$APP_DIR/JobHunter.command"
+    HASH_BEFORE=$(md5 -q "$SCRIPT_PATH" 2>/dev/null || echo "")
+
+    echo -e "${_YELLOW}Checking for updates...${_NC}"
+
+    # Stash local changes if any
+    if [[ -n $(git status --porcelain 2>/dev/null) ]]; then
+        git stash push -m "JobHunter auto-update $(date +%Y%m%d_%H%M%S)" --quiet 2>/dev/null
+        STASHED=true
+    else
+        STASHED=false
+    fi
+
+    # Pull updates (10s timeout, silent failures)
+    if timeout 10 git pull --quiet origin main 2>/dev/null; then
+        echo -e "${_GREEN}Up to date${_NC}"
+    elif git pull --quiet origin main 2>/dev/null; then
+        echo -e "${_GREEN}Up to date${_NC}"
+    else
+        echo -e "${_YELLOW}Offline - continuing with current version${_NC}"
+    fi
+
+    # Restore stashed changes
+    if [[ "$STASHED" == "true" ]]; then
+        git stash pop --quiet 2>/dev/null || true
+    fi
+
+    # Re-exec if script itself was updated
+    HASH_AFTER=$(md5 -q "$SCRIPT_PATH" 2>/dev/null || echo "")
+    if [[ -n "$HASH_BEFORE" && "$HASH_BEFORE" != "$HASH_AFTER" ]]; then
+        echo -e "${_GREEN}Updated! Restarting...${_NC}"
+        exec "$SCRIPT_PATH" --skip-update
+    fi
+
+    echo ""
+fi
+
 # Colors for pretty output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -194,13 +240,27 @@ cd "$APP_DIR"
 if [ ! -d "venv" ]; then
     print_info "Creating Python environment..."
     python3 -m venv venv
+    VENV_CREATED=true
+else
+    VENV_CREATED=false
 fi
 
 source venv/bin/activate
 
-print_info "Installing Python packages..."
-pip install --quiet --upgrade pip
-pip install --quiet -r requirements.txt
+# Track if requirements have changed since last install
+REQ_HASH_FILE="venv/.requirements_hash"
+CURRENT_HASH=$(md5 -q requirements.txt 2>/dev/null || md5sum requirements.txt | cut -d' ' -f1)
+STORED_HASH=$(cat "$REQ_HASH_FILE" 2>/dev/null || echo "")
+
+if [[ "$VENV_CREATED" == "true" ]] || [[ "$CURRENT_HASH" != "$STORED_HASH" ]]; then
+    print_info "Installing/updating Python packages..."
+    pip install --quiet --upgrade pip
+    pip install --quiet -r requirements.txt
+    echo "$CURRENT_HASH" > "$REQ_HASH_FILE"
+    print_success "Python packages updated"
+else
+    print_success "Python packages ready"
+fi
 
 print_success "App ready"
 

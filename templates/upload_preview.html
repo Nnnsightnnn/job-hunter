@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+
+{% block title %}Preview Extracted Resume{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Preview Extracted Data</h1>
+            <p class="text-gray-500">Review and edit before saving to your profile</p>
+        </div>
+
+        <a href="{{ url_for('upload') }}" class="btn btn-secondary">
+            &larr; Upload Different File
+        </a>
+    </div>
+
+    {% if error %}
+    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <p class="text-yellow-800"><strong>Note:</strong> {{ error }}</p>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('upload_confirm') }}" class="space-y-6">
+        <!-- Merge Mode Selection -->
+        <div class="card">
+            <h2 class="font-semibold text-lg text-gray-800 mb-4">How would you like to save?</h2>
+
+            <div class="space-y-3">
+                <label class="flex items-start space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+                    <input type="radio" name="merge_mode" value="merge" checked
+                           class="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                    <div>
+                        <span class="font-medium text-gray-700">Merge (Recommended)</span>
+                        <p class="text-sm text-gray-500">
+                            Updates personal info with extracted data, adds new experience/education entries,
+                            and combines skills (removing duplicates).
+                        </p>
+                    </div>
+                </label>
+
+                <label class="flex items-start space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+                    <input type="radio" name="merge_mode" value="replace"
+                           class="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                    <div>
+                        <span class="font-medium text-gray-700">Replace All</span>
+                        <p class="text-sm text-gray-500">
+                            Completely replaces your current profile with the extracted data.
+                            Use with caution - this cannot be undone.
+                        </p>
+                    </div>
+                </label>
+
+                <label class="flex items-start space-x-3 cursor-pointer p-3 border rounded-lg hover:bg-gray-50">
+                    <input type="radio" name="merge_mode" value="append"
+                           class="mt-1 h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                    <div>
+                        <span class="font-medium text-gray-700">Append Only</span>
+                        <p class="text-sm text-gray-500">
+                            Only adds entries that don't already exist. Keeps all current data intact.
+                        </p>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Side by Side Comparison -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Extracted Data (Left) -->
+            <div class="space-y-4">
+                <h2 class="font-semibold text-lg text-gray-800 border-b pb-2">
+                    Extracted Data
+                </h2>
+
+                <!-- Personal Info -->
+                <div class="card">
+                    <h3 class="font-medium text-gray-700 mb-3">Personal Information</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm text-gray-500">Name</label>
+                            <input type="text" name="name" value="{{ extracted.personal.name }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500">Email</label>
+                            <input type="email" name="email" value="{{ extracted.personal.email }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500">Phone</label>
+                            <input type="text" name="phone" value="{{ extracted.personal.phone }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500">Location</label>
+                            <input type="text" name="location" value="{{ extracted.personal.location }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500">LinkedIn</label>
+                            <input type="text" name="linkedin" value="{{ extracted.personal.linkedin }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500">Summary</label>
+                            <textarea name="summary" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">{{ extracted.personal.summary }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experience -->
+                <div class="card">
+                    <h3 class="font-medium text-gray-700 mb-3">
+                        Experience
+                        <span class="text-sm text-gray-400">({{ extracted.experience|length }} entries)</span>
+                    </h3>
+                    {% if extracted.experience %}
+                    <div class="space-y-4">
+                        {% for exp in extracted.experience %}
+                        <div class="border-l-4 border-indigo-200 pl-4 py-2">
+                            <p class="font-medium">{{ exp.title }}</p>
+                            <p class="text-sm text-gray-600">{{ exp.company }}</p>
+                            <p class="text-xs text-gray-400">{{ exp.start_date }} - {{ exp.end_date }}</p>
+                            {% if exp.bullets %}
+                            <ul class="text-sm text-gray-600 mt-2 space-y-1">
+                                {% for bullet in exp.bullets %}
+                                <li class="flex">
+                                    <span class="text-gray-400 mr-2">-</span>
+                                    <span>{{ bullet.original }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400 italic">No experience extracted</p>
+                    {% endif %}
+                </div>
+
+                <!-- Education -->
+                <div class="card">
+                    <h3 class="font-medium text-gray-700 mb-3">
+                        Education
+                        <span class="text-sm text-gray-400">({{ extracted.education|length }} entries)</span>
+                    </h3>
+                    {% if extracted.education %}
+                    <div class="space-y-3">
+                        {% for edu in extracted.education %}
+                        <div class="border-l-4 border-green-200 pl-4 py-2">
+                            <p class="font-medium">{{ edu.degree }} in {{ edu.field }}</p>
+                            <p class="text-sm text-gray-600">{{ edu.institution }}</p>
+                            <p class="text-xs text-gray-400">{{ edu.graduation_date }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400 italic">No education extracted</p>
+                    {% endif %}
+                </div>
+
+                <!-- Skills -->
+                <div class="card">
+                    <h3 class="font-medium text-gray-700 mb-3">Skills</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm text-gray-500">Technical</label>
+                            <input type="text" name="technical_skills"
+                                   value="{{ extracted.skills.technical|join(', ') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500">Tools</label>
+                            <input type="text" name="tools"
+                                   value="{{ extracted.skills.tools|join(', ') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-500">Soft Skills</label>
+                            <input type="text" name="soft_skills"
+                                   value="{{ extracted.skills.soft|join(', ') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Profile (Right) -->
+            <div class="space-y-4">
+                <h2 class="font-semibold text-lg text-gray-800 border-b pb-2">
+                    Current Profile
+                </h2>
+
+                <!-- Personal Info -->
+                <div class="card bg-gray-50">
+                    <h3 class="font-medium text-gray-700 mb-3">Personal Information</h3>
+                    <div class="space-y-2 text-sm">
+                        <p><span class="text-gray-500">Name:</span> {{ current.personal.name or 'Not set' }}</p>
+                        <p><span class="text-gray-500">Email:</span> {{ current.personal.email or 'Not set' }}</p>
+                        <p><span class="text-gray-500">Phone:</span> {{ current.personal.phone or 'Not set' }}</p>
+                        <p><span class="text-gray-500">Location:</span> {{ current.personal.location or 'Not set' }}</p>
+                        <p><span class="text-gray-500">LinkedIn:</span> {{ current.personal.linkedin or 'Not set' }}</p>
+                        <p class="text-gray-500">Summary:</p>
+                        <p class="text-gray-700">{{ current.personal.summary or 'Not set' }}</p>
+                    </div>
+                </div>
+
+                <!-- Experience -->
+                <div class="card bg-gray-50">
+                    <h3 class="font-medium text-gray-700 mb-3">
+                        Experience
+                        <span class="text-sm text-gray-400">({{ current.experience|length }} entries)</span>
+                    </h3>
+                    {% if current.experience %}
+                    <div class="space-y-3">
+                        {% for exp in current.experience %}
+                        <div class="border-l-4 border-gray-300 pl-4 py-2">
+                            <p class="font-medium text-sm">{{ exp.title }}</p>
+                            <p class="text-xs text-gray-600">{{ exp.company }}</p>
+                            <p class="text-xs text-gray-400">{{ exp.start_date }} - {{ exp.end_date }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400 italic text-sm">No experience yet</p>
+                    {% endif %}
+                </div>
+
+                <!-- Education -->
+                <div class="card bg-gray-50">
+                    <h3 class="font-medium text-gray-700 mb-3">
+                        Education
+                        <span class="text-sm text-gray-400">({{ current.education|length }} entries)</span>
+                    </h3>
+                    {% if current.education %}
+                    <div class="space-y-2">
+                        {% for edu in current.education %}
+                        <div class="border-l-4 border-gray-300 pl-4 py-2">
+                            <p class="font-medium text-sm">{{ edu.degree }}</p>
+                            <p class="text-xs text-gray-600">{{ edu.institution }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-400 italic text-sm">No education yet</p>
+                    {% endif %}
+                </div>
+
+                <!-- Skills -->
+                <div class="card bg-gray-50">
+                    <h3 class="font-medium text-gray-700 mb-3">Skills</h3>
+                    <div class="space-y-2 text-sm">
+                        <p><span class="text-gray-500">Technical:</span>
+                            {{ current.skills.technical|join(', ') or 'None' }}</p>
+                        <p><span class="text-gray-500">Tools:</span>
+                            {{ current.skills.tools|join(', ') or 'None' }}</p>
+                        <p><span class="text-gray-500">Soft:</span>
+                            {{ current.skills.soft|join(', ') or 'None' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden fields for experience and education data -->
+        <input type="hidden" name="experience_json" value="{{ extracted.experience|tojson }}">
+        <input type="hidden" name="education_json" value="{{ extracted.education|tojson }}">
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3 pt-4 border-t">
+            <a href="{{ url_for('upload') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success">
+                Save to Profile
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
