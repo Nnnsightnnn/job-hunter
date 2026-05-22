@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#  built by nnnsightnnn — signal from noise
 """
 Job Hunter - Web UI
 A simple, friendly web interface for job searching and resume tailoring.

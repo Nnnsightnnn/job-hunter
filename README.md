@@ -90,3 +90,15 @@ Then click **Edit Work Experience** and add your past jobs:
 You've got this! Having a tailored resume for each job makes a huge difference.
 
 *- Kenny*
+
+
+---
+
+<p align="center">
+  <a href="https://github.com/nnnsightnnn">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".brand/built-by-dark.svg">
+      <img src=".brand/built-by.svg" alt="built by nnnsightnnn" height="26">
+    </picture>
+  </a>
+</p>
