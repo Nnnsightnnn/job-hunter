@@ -95,7 +95,7 @@ You've got this! Having a tailored resume for each job makes a huge difference.
 ---
 
 <p align="center">
-  <a href="https://github.com/nnnsightnnn">
+  <a href="https://github.com/Nnnsightnnn">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset=".brand/built-by-dark.svg">
       <img src=".brand/built-by.svg" alt="built by nnnsightnnn" height="26">
